@@ -3,12 +3,16 @@ import PropTypes from 'prop-types';
 import { Modal, Button }  from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClipboardCheck } from '@fortawesome/free-solid-svg-icons';
-
+import axios from 'axios';
 
 function ConcluirTarefa(props){
 
+    const API_URL_CONCLUIR_TAREFAS = 'http://localhost:3001/gerenciador-tarefas/:id/concluir';
+
 
     const [exibirModal, setExibirModal] = useState(false);
+    const [exibirModalErro, setExibirModalErro] = useState(false);
+
 
     function handleAbrirModal(event){
         // para evitar que abra navegação ou atualize a tela
@@ -16,6 +20,12 @@ function ConcluirTarefa(props){
         setExibirModal(true);
          
     }
+
+    function handleFecharModalErro(){
+        setExibirModalErro(false);
+    }
+
+
 
 
     function handleFecharModal(){
@@ -65,6 +75,23 @@ function ConcluirTarefa(props){
                     </Button>
                 </Modal.Footer>
             </Modal>
+
+
+            <Modal show={exibirModalErro} onHide={handleFecharModalErro} data-testid="modal">
+                <Modal.Header closeButton>
+                    <Modal.Title>Erro </Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    Erro ao excluir tarefa, tente novamente em instantes.
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="warning" onClick={handleFecharModalErro}>
+                        Fechar
+                    </Button>
+
+                </Modal.Footer>
+            </Modal>
+
         </span>
     );
 
