@@ -6,11 +6,12 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import ItensListaTarefas from './itens-lista-tarefas';
 import Paginacao from './paginacao';
 import Ordenacao from './ordenacao';
+import axios from 'axios';
 
 function ListarTarefas(){
 
     const ITENS_POR_PAG = 3;
-
+    const API_URL_LISTAR_TAREFAS = 'http://localhost:3001/gerenciador-tarefas';
 
     const [tarefas, setTarefas] = useState([]);
     const [carregarTarefas, setCarregarTarefas] = useState(true);
@@ -20,29 +21,63 @@ function ListarTarefas(){
     const [ordenarDesc, setOrdernarDesc] = useState(false);
     const [filtroTarefa, setFiltroTarefa] = useState('');
 
+    // //carregar assim que o componente for criado
+    // useEffect(()=> {
+    //     function obterTarefas(){
+    //         const tarefasDb = localStorage['tarefas'];
+    //         let listaTarefas = tarefasDb ? JSON.parse(tarefasDb) : [];
+
+    //         /**filtrar */
+    //         listaTarefas = listaTarefas.filter(
+    //             t => t.nome.toLowerCase().indexOf(filtroTarefa.toLowerCase()) >= 0
+    //         );
+
+    //         /**ordernar */
+    //         if(ordenarAsc){
+    //             listaTarefas.sort( (t1, t2) => (t1.nome.toLowerCase() > t2.nome.toLowerCase()) ? 1 : -1 );
+    //         }else if(ordenarDesc){
+    //             listaTarefas.sort( (t1, t2) => (t1.nome.toLowerCase() < t2.nome.toLowerCase()) ? 1 : -1 );
+    //         }
+            
+    //         /**PAGINAR */
+    //         setTotalItems(listaTarefas.length);
+    //         //começa na posicao array 0
+    //         setTarefas(listaTarefas.splice((paginaAtual-1) * ITENS_POR_PAG, ITENS_POR_PAG));
+            
+    //     }
+    //     //se nao for carregado, carregue!!
+    //     if(carregarTarefas){
+    //         obterTarefas();
+    //         setCarregarTarefas(false);
+    //     }
+    // }, [carregarTarefas, paginaAtual, ordenarAsc, ordenarDesc, filtroTarefa]); //vai ficar escutando também o página atual
+    // //seja chamado apenas qdo algum state trabalhe com ele, qdo esse
+    // //estado seja alterado
+
     //carregar assim que o componente for criado
     useEffect(()=> {
-        function obterTarefas(){
-            const tarefasDb = localStorage['tarefas'];
-            let listaTarefas = tarefasDb ? JSON.parse(tarefasDb) : [];
-
-            /**filtrar */
-            listaTarefas = listaTarefas.filter(
-                t => t.nome.toLowerCase().indexOf(filtroTarefa.toLowerCase()) >= 0
-            );
-
-            /**ordernar */
+        async function obterTarefas(){
+            
+            //ordernar            
+            let ordem = '';
             if(ordenarAsc){
-                listaTarefas.sort( (t1, t2) => (t1.nome.toLowerCase() > t2.nome.toLowerCase()) ? 1 : -1 );
+                ordem = 'ASC';
             }else if(ordenarDesc){
-                listaTarefas.sort( (t1, t2) => (t1.nome.toLowerCase() < t2.nome.toLowerCase()) ? 1 : -1 );
+                ordem = 'DESC';
             }
             
-            /**PAGINAR */
-            setTotalItems(listaTarefas.length);
-            //começa na posicao array 0
-            setTarefas(listaTarefas.splice((paginaAtual-1) * ITENS_POR_PAG, ITENS_POR_PAG));
-            
+            // async ação assincrona / await => aguarda o retorno da API
+            try{
+                const params = `?pag=${paginaAtual}&ordem=${ordem}&filtro-tarefa=${filtroTarefa}`;
+                let { data } = await axios.get(API_URL_LISTAR_TAREFAS+params);
+                //await faz aguardar, qdo retornar ai atribui a variavel data
+                setTotalItems(data.totalItens);
+                setTarefas(data.tarefas);
+            } catch(err){
+                setTarefas([]);
+            }
+
+
         }
         //se nao for carregado, carregue!!
         if(carregarTarefas){
